@@ -97,7 +97,7 @@
    37 :left
    39 :right})
 
-(def state (atom {:board (yoshio-levels 0)}))
+(def state (atom {:board (yoshio-levels 3)}))
 
 (defn process-keydown [ev]
   (when-not (:won @state)
