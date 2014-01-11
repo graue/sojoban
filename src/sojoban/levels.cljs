@@ -19,4 +19,3 @@
 (defn ascii-level-to-board [ascii]
   (vov-map ascii-to-objset
            (string/split ascii #"\n\s*")))
-
