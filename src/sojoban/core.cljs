@@ -1,13 +1,15 @@
 (ns sojoban.core
   (:require [om.core :as om :include-macros true]
             [sablono.core :as html :refer [html] :include-macros true]
+            [goog.events :as events]
+            [goog.events.EventType]
             [sojoban.levels.yoshio :refer [yoshio-levels]]))
 
 (defn image-url
   "Image URL for a square"
   [cell]
   (-> cell
-      {#{:space} "space"
+      {#{} "space"
        #{:player} "man"
        #{:block} "bag"
        #{:goal} "goal"
@@ -17,6 +19,66 @@
       (as-> x (str "http://www.ne.jp/asahi/ai/yoshio/sokoban/image/p_"
                    x ".gif"))))
 
+(defn find-player
+  "Return [row col] coordinates of the player on the board."
+  [board]
+  (loop [row-idx 0, col-idx 0]
+    (when-let [row (get board row-idx)]
+      (if-let [cell (get row col-idx)]
+        (if (cell :player)
+          [row-idx col-idx]
+          (recur row-idx (inc col-idx)))
+        (recur (inc row-idx) 0)))))
+
+(def ^{:doc "Row/column vector for a direction."} dir->vec
+  {:up [-1 0]
+   :down [1 0]
+   :left [0 -1]
+   :right [0 1]})
+
+(defn move-from
+  "Move the object from from-loc to to-loc in the board."
+  [board obj from-loc to-loc]
+  (-> board
+    (update-in to-loc conj obj)
+    (update-in from-loc disj obj)))
+
+(defn try-move
+  "Try moving the player in the direction given. Return the updated board
+  or nil."
+  [board dir]
+  (let [start-loc (find-player board)
+        dir-vec (dir->vec dir)
+        move-loc (map + start-loc dir-vec)
+
+        ; Where a block would go if pushed.
+        push-loc (map + move-loc dir-vec)
+
+        [start-cell move-cell push-cell]
+        (map #(get-in board %) [start-loc move-loc push-loc])]
+
+    (when (and move-cell
+               (not (move-cell :wall)))
+      (if-not (move-cell :block)
+        (move-from board :player start-loc move-loc)
+        nil ; fixme - test block push
+        )
+      )
+    )
+  )
+
+(def keycode->dir
+  {38 :up
+   40 :down
+   37 :left
+   39 :right})
+
+(def state (atom {:board (yoshio-levels 0)}))
+
+(defn process-keydown [ev]
+  (when-let [dir (keycode->dir (.-keyCode ev))]
+    (swap! state update-in [:board] #(or (try-move % dir) %))))
+
 (defn sojoban-widget [data owner]
   (om/component
     (html [:div#game
@@ -25,4 +87,7 @@
               (for [cell row]
                 [:td [:img {:src (image-url cell)}]])])])))
 
-(om/root {:board (yoshio-levels 0)} sojoban-widget js/document.body)
+(events/listen js/document goog.events.EventType.KEYDOWN
+               process-keydown)
+
+(om/root state sojoban-widget js/document.body)

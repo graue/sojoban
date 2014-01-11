@@ -7,8 +7,8 @@
   [f vov]
   (mapv #(mapv f %) vov))
 
-(def ascii-to-square
-  {\space #{:space}
+(def ascii-to-objset
+  {\space #{}
    \# #{:wall}
    \@ #{:player}
    \. #{:goal}
@@ -17,6 +17,6 @@
    \+ #{:player :goal}})
 
 (defn ascii-level-to-board [ascii]
-  (vov-map ascii-to-square
+  (vov-map ascii-to-objset
            (string/split ascii #"\n\s*")))
 
