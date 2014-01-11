@@ -16,8 +16,7 @@
        #{:block :goal} "bag_goal"
        #{:player :goal} "man_goal"
        #{:wall} "block"}
-      (as-> x (str "http://www.ne.jp/asahi/ai/yoshio/sokoban/image/p_"
-                   x ".gif"))))
+      (as-> x (str "images/p_" x ".gif"))))
 
 (defn find-player
   "Return [row col] coordinates of the player on the board."
