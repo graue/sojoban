@@ -61,11 +61,36 @@
                (not (move-cell :wall)))
       (if-not (move-cell :block)
         (move-from board :player start-loc move-loc)
-        nil ; fixme - test block push
-        )
-      )
-    )
-  )
+
+        ; we have to push a block
+        (when (and push-cell
+                   (not (push-cell :wall))
+                   (not (push-cell :block)))
+          (-> board
+              (move-from :block move-loc push-loc)
+              (move-from :player start-loc move-loc)))))))
+
+(defn board-won? [board]
+  (->> board
+       flatten
+       (filter #(and (get % :goal)
+                     (not (get % :block))))
+       first
+       not))
+
+(defn process-move [{:keys [board won num-moves]
+                     :or {won false, num-moves 0}
+                     :as state}
+                    dir]
+  (if won
+    state  ; Don't accept moves once the level is done.
+    (if-let [new-board (try-move board dir)]
+      (assoc state :board new-board
+                   :num-moves (inc num-moves)
+                   :won (board-won? new-board))
+
+      ; Move failed; return unchanged state.
+      state)))
 
 (def keycode->dir
   {38 :up
@@ -76,8 +101,11 @@
 (def state (atom {:board (yoshio-levels 0)}))
 
 (defn process-keydown [ev]
-  (when-let [dir (keycode->dir (.-keyCode ev))]
-    (swap! state update-in [:board] #(or (try-move % dir) %))))
+  (when-not (:won @state)
+    (when-let [dir (keycode->dir (.-keyCode ev))]
+      (swap! state process-move dir)
+      (when (:won @state)
+        (js/alert (str "You win, in " (:num-moves @state) " moves!"))))))
 
 (defn sojoban-widget [data owner]
   (om/component
