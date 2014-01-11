@@ -18,4 +18,12 @@
                 :output-to "sojoban.js"
                 :output-dir "out"
                 :optimizations :none
-                :source-map true}}]})
+                :source-map true}}
+             {:id "optimized"
+              :source-paths ["src"]
+              :compiler {
+                :output-to "sojoban-opt.js"
+                :optimizations :advanced
+                :pretty-print false
+                :preamble ["react/react.min.js"]
+                :externs ["react/externs/react.js"]}}]})
