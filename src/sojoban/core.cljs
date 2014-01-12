@@ -103,40 +103,45 @@
 
 (def dirs #{:up :down :left :right})
 
-(defn get-init-state []
-  (let [level-set yoshio-levels
-        current-level 3
-        board (level-set current-level)]
-    {:level-set level-set
-     :current-level current-level
-     :board board
-     :history []}))
+(defn start-level [state-value level-set level-number]
+  (assoc state-value
+         :level-set level-set
+         :level-number level-number
+         :board (level-set level-number)
+         :history []
+         :won false))
 
-(def state (atom (get-init-state)))
+(defn undo [state-value]
+  (if (> (count (:history state-value)))
+    (-> state-value
+        (assoc :board (peek (:history state-value)))
+        (update-in [:history] pop))
+    state-value))
+
+(def init-state
+  (start-level {} yoshio-levels 0))
+
+(def state (atom init-state))
+
+(defn process-action [action]
+  (cond
+    (and (dirs action)
+         (not (:won @state)))
+    (do
+      (swap! state process-move action)
+      (when (:won @state)
+        (js/alert (str "You win, in " (count (:history @state)) " moves!"))))
+
+    (= action :restart)
+    (swap! state #(start-level % (:level-set %) (:level-number %)))
+
+    (and (= action :undo)
+         (not (:won @state)))
+    (swap! state undo)))
 
 (defn process-keydown [ev]
   (when-let [action (keycode->action (.-keyCode ev))]
-    (when-not (:won @state)
-      (cond
-        (dirs action)
-        (do
-          (swap! state process-move action)
-          (when (:won @state)
-            (js/alert (str "You win, in " (count (:history @state)) " moves!"))))
-
-        ; FIXME: doesn't matter because JS is single-threaded, but semantically
-        ; shouldn't deref/read state before modifying it - should do that
-        ; inside the update function. (for restart and undo)
-
-        (= action :restart)
-        (when (> (count (:history @state)) 0)
-          (swap! state #(let [orig-board (first (:history %))]
-            (assoc % :board orig-board :history [orig-board]))))
-
-        (= action :undo)
-        (when (> (count (:history @state)) 0)
-          (swap! state #(assoc % :board (peek (:history %))
-                                 :history (pop (:history %)))))))
+    (process-action action)
     (.preventDefault ev)))
 
 (defn board-widget [data owner]
