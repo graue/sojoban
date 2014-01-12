@@ -112,7 +112,7 @@
          :won false))
 
 (defn undo [state-value]
-  (if (> (count (:history state-value)))
+  (if (> (count (:history state-value)) 0)
     (-> state-value
         (assoc :board (peek (:history state-value)))
         (update-in [:history] pop))
