@@ -5,18 +5,20 @@
             [goog.events.EventType]
             [sojoban.levels.yoshio :refer [yoshio-levels]]))
 
-(defn image-url
-  "Image URL for a square"
-  [cell]
-  (-> cell
-      {#{} "space"
-       #{:player} "man"
-       #{:block} "bag"
-       #{:goal} "goal"
-       #{:block :goal} "bag_goal"
-       #{:player :goal} "man_goal"
-       #{:wall} "block"}
-      (as-> x (str "images/" x ".png"))))
+(defn val-map
+  "Map f over hashmap m's values. Should be in the dang core."
+  [f m]
+  (into {} (for [[k v] m] [k (f v)])))
+
+(def ^{:doc "Map from cell contents to image URL"} image-url
+  (val-map #(str "images/" % ".png")
+           {#{} "space"
+            #{:player} "man"
+            #{:block} "bag"
+            #{:goal} "goal"
+            #{:block :goal} "bag_goal"
+            #{:player :goal} "man_goal"
+            #{:wall} "block"}))
 
 (defn find-player
   "Return [row col] coordinates of the player on the board."
@@ -152,10 +154,16 @@
            [:p "Sokoban, "
             [:a {:href "http://clojure.org"} "with a J in it"] "."]
            (om/build board-widget data)
-           [:p "Use arrow keys to move. Push all the blocks onto the goals."]
-           ])))
+           [:p "Use arrow keys to move. Push all the blocks onto the goals."]])))
+
+(defn preload-images []
+  (doseq [url (vals image-url)]
+    (let [img (js/Image.)]
+      (set! (.-src img) url))))
 
 (events/listen js/document goog.events.EventType.KEYDOWN
                process-keydown)
+
+(preload-images)
 
 (om/root state app-widget js/document.body)
