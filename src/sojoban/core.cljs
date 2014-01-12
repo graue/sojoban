@@ -174,6 +174,16 @@
               (for [cell row]
                 [:td [:img {:src (image-url cell)}]])])])))
 
+(defn level-info-widget [data owner]
+  (om/component
+    (html [:p#level-info
+           [:span#level-name
+            (str (-> data :level-set om/value meta :title)
+                 " " (-> data :level-number inc))]
+           " by "
+           [:span#level-author
+            (-> data :level-set om/value meta :author)]])))
+
 (defn app-widget [data owner]
   (om/component
     (html [:div#app
@@ -181,6 +191,7 @@
            [:p "Sokoban, "
             [:a {:href "http://clojure.org"} "with a J in it"] "."]
            (om/build board-widget data)
+           (om/build level-info-widget data)
            [:p "Use arrow keys to move. Push all the blocks onto the goals."]])))
 
 (defn preload-images []

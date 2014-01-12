@@ -4,7 +4,9 @@
   (:require [sojoban.levels :as levels]))
 
 (def yoshio-levels
-  (mapv levels/ascii-level-to-board
+  ^{:author "Yoshio Murase"
+    :title "52 Maps Generated Automatically"}
+  (->>
        ["########
          ###  . #
          ## * # #
@@ -405,19 +407,22 @@
          # .$ # #
          ###    #
          ########"
-        "######## 
-         #      # 
-         # #$   # 
-         # $ @#.# 
-         ##$#.  # 
-         ##    .# 
-         ######## 
+        "########
+         #      #
+         # #$   #
+         # $ @#.#
+         ##$#.  #
+         ##    .#
+         ########
          ########"
-        "######## 
-         #  . ### 
-         #    ### 
-         # #$$. # 
-         #.  ## # 
-         #@$ ## # 
-         ###    # 
-         ########"]))
+        "########
+         #  . ###
+         #    ###
+         # #$$. #
+         #.  ## #
+         #@$ ## #
+         ###    #
+         ########"]
+      (mapv levels/ascii-level-to-board)
+      (#(with-meta % {:author "Yoshio Murase"
+                      :title "52 Maps Generated Automatically"}))))
