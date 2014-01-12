@@ -99,7 +99,9 @@
    37 :left
    39 :right
    82 :restart  ; XXX: not sure why (int \R) doesn't work?
-   85 :undo})
+   85 :undo
+   78 :next-level
+   80 :prev-level})
 
 (def dirs #{:up :down :left :right})
 
@@ -117,6 +119,12 @@
         (assoc :board (peek (:history state-value)))
         (update-in [:history] pop))
     state-value))
+
+(defn try-seek-level [state-value diff]
+  (let [new-level-num (+ diff (:level-number state-value))]
+    (if (<= 0 new-level-num (dec (count (:level-set state-value))))
+      (start-level state-value (:level-set state-value) new-level-num)
+      state-value)))
 
 (def init-state
   (start-level {} yoshio-levels 0))
@@ -137,7 +145,13 @@
 
     (and (= action :undo)
          (not (:won @state)))
-    (swap! state undo)))
+    (swap! state undo)
+
+    (= action :prev-level)
+    (swap! state try-seek-level -1)
+
+    (= action :next-level)
+    (swap! state try-seek-level 1)))
 
 (defn no-key-modifiers? [ev]
   (and
