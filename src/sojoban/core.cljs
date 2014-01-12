@@ -77,7 +77,7 @@
        first
        not))
 
-(defn process-move [{:keys [board won num-moves]
+(defn process-move [{:keys [board won num-moves history]
                      :or {won false, num-moves 0}
                      :as state}
                     dir]
@@ -86,27 +86,59 @@
     (if-let [new-board (try-move board dir)]
       (assoc state :board new-board
                    :num-moves (inc num-moves)
-                   :won (board-won? new-board))
+                   :won (board-won? new-board)
+                   :history (conj history board))
 
       ; Move failed; return unchanged state.
       state)))
 
-(def keycode->dir
+(def keycode->action
   {38 :up
    40 :down
    37 :left
-   39 :right})
+   39 :right
+   82 :restart  ; XXX: not sure why (int \R) doesn't work?
+   85 :undo})
 
-(def state (atom {:board (yoshio-levels 3)}))
+(def dirs #{:up :down :left :right})
+
+(defn get-init-state []
+  (let [level-set yoshio-levels
+        current-level 3
+        board (level-set current-level)]
+    {:level-set level-set
+     :current-level current-level
+     :board board
+     :history []}))
+
+(def state (atom (get-init-state)))
 
 (defn process-keydown [ev]
-  (when-not (:won @state)
-    (when-let [dir (keycode->dir (.-keyCode ev))]
-      (swap! state process-move dir)
-      (when (:won @state)
-        (js/alert (str "You win, in " (:num-moves @state) " moves!"))))))
+  (when-let [action (keycode->action (.-keyCode ev))]
+    (when-not (:won @state)
+      (cond
+        (dirs action)
+        (do
+          (swap! state process-move action)
+          (when (:won @state)
+            (js/alert (str "You win, in " (:num-moves @state) " moves!"))))
 
-(defn sojoban-widget [data owner]
+        ; FIXME: doesn't matter because JS is single-threaded, but semantically
+        ; shouldn't deref/read state before modifying it - should do that
+        ; inside the update function. (for restart and undo)
+
+        (= action :restart)
+        (when (> (count (:history @state)) 0)
+          (swap! state #(let [orig-board (first (:history %))]
+            (assoc % :board orig-board :history [orig-board]))))
+
+        (= action :undo)
+        (when (> (count (:history @state)) 0)
+          (swap! state #(assoc % :board (peek (:history %))
+                                 :history (pop (:history %)))))))
+    (.preventDefault ev)))
+
+(defn board-widget [data owner]
   (om/component
     (html [:div#game
            (for [row (:board data)]
@@ -114,7 +146,17 @@
               (for [cell row]
                 [:td [:img {:src (image-url cell)}]])])])))
 
+(defn app-widget [data owner]
+  (om/component
+    (html [:div#app
+           [:h1 "Sojoban"]
+           [:p "Sokoban, "
+            [:a {:href "http://clojure.org"} "with a J in it"] "."]
+           (om/build board-widget data)
+           [:p "Use arrow keys to move. Push all the blocks onto the goals."]
+           ])))
+
 (events/listen js/document goog.events.EventType.KEYDOWN
                process-keydown)
 
-(om/root state sojoban-widget js/document.body)
+(om/root state app-widget js/document.body)
