@@ -139,10 +139,18 @@
          (not (:won @state)))
     (swap! state undo)))
 
+(defn no-key-modifiers? [ev]
+  (and
+    (not (.-shiftKey ev))
+    (not (.-ctrlKey ev))
+    (not (.-altKey ev))
+    (not (.-metaKey ev))))
+
 (defn process-keydown [ev]
   (when-let [action (keycode->action (.-keyCode ev))]
-    (process-action action)
-    (.preventDefault ev)))
+    (when (no-key-modifiers? ev)
+      (process-action action)
+      (.preventDefault ev))))
 
 (defn board-widget [data owner]
   (om/component
