@@ -1,0 +1,63 @@
+#game, #game img {
+  line-height: 0;
+}
+
+#game {
+  float: left;
+  margin-right: 20px;
+}
+
+#game-and-legend:after {
+  clear: both;
+  content: " ";
+  display: block;
+  height: 0;
+  visibility: hidden;
+}
+
+#game img {
+  width: 35px;
+  height: 35px;
+  background: url("images/space.png") no-repeat fixed center center / 100% rgb(255, 0, 0);
+}
+
+#level-name, #level-author {
+  font-weight: bold;
+}
+
+#instructions {
+  padding-top: 20px;
+  font-size: 13px;
+}
+
+dt {
+  font-weight: bold;
+}
+
+dd {
+  display: inline;
+}
+
+.animated {-webkit-animation-fill-mode:both;-moz-animation-fill-mode:both;-ms-animation-fill-mode:both;-o-animation-fill-mode:both;animation-fill-mode:both;-webkit-animation-duration:1s;-moz-animation-duration:1s;-ms-animation-duration:1s;-o-animation-duration:1s;animation-duration:1s;}.animated.hinge{-webkit-animation-duration:1s;-moz-animation-duration:1s;-ms-animation-duration:1s;-o-animation-duration:1s;animation-duration:1s;}
+@-webkit-keyframes flash {
+  0%, 50%, 100% {opacity: 1;}
+  25%, 75% {opacity: 0;}
+}
+@-moz-keyframes flash {
+  0%, 50%, 100% {opacity: 1;} 
+  25%, 75% {opacity: 0;}
+}
+@-o-keyframes flash {
+  0%, 50%, 100% {opacity: 1;} 
+  25%, 75% {opacity: 0;}
+}
+@keyframes flash {
+  0%, 50%, 100% {opacity: 1;} 
+  25%, 75% {opacity: 0;}
+}
+.flash {
+  -webkit-animation-name: flash;
+  -moz-animation-name: flash;
+  -o-animation-name: flash;
+  animation-name: flash;
+}

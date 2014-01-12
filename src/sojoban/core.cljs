@@ -135,10 +135,7 @@
   (cond
     (and (dirs action)
          (not (:won @state)))
-    (do
-      (swap! state process-move action)
-      (when (:won @state)
-        (js/alert (str "You win, in " (count (:history @state)) " moves!"))))
+    (swap! state process-move action)
 
     (= action :restart)
     (swap! state #(start-level % (:level-set %) (:level-number %)))
@@ -184,15 +181,44 @@
            [:span#level-author
             (-> data :level-set om/value meta :author)]])))
 
+(defn status-message [{:keys [history won]}]
+  (let [num-moves (count history)]
+    (if (= num-moves 0)
+      [:p#status.blank ""]
+      (if won
+        [:p#status.animated.flash
+         (str "Completed in " num-moves " moves! Press N to continue.")]
+        [:p#status
+         (str "Moves: " num-moves)]))))
+
+(def key-help
+  [["arrow keys" "move/push"]
+   ["u" "undo"]
+   ["r" "restart"]
+   ["n" "next level"]
+   ["p" "previous level"]])
+
+(def instructions-html
+  [:div#instructions
+   [:p "Push all blocks onto goals."]
+   (apply vector :dl#keys
+    (->>
+      (for [[k v] key-help]
+        [[:dt k]
+         [:dd v]])
+      (apply concat)))])
+
 (defn app-widget [data owner]
   (om/component
     (html [:div#app
            [:h1 "Sojoban"]
            [:p "Sokoban, "
             [:a {:href "http://clojure.org"} "with a J in it"] "."]
-           (om/build board-widget data)
            (om/build level-info-widget data)
-           [:p "Use arrow keys to move. Push all the blocks onto the goals."]])))
+           [:div#game-and-legend
+             (om/build board-widget data)
+             instructions-html]
+           (status-message (om/value data))])))
 
 (defn preload-images []
   (doseq [url (vals image-url)]
