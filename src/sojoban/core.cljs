@@ -77,15 +77,14 @@
        first
        not))
 
-(defn process-move [{:keys [board won num-moves history]
-                     :or {won false, num-moves 0}
+(defn process-move [{:keys [board won history]
+                     :or {won false}
                      :as state}
                     dir]
   (if won
     state  ; Don't accept moves once the level is done.
     (if-let [new-board (try-move board dir)]
       (assoc state :board new-board
-                   :num-moves (inc num-moves)
                    :won (board-won? new-board)
                    :history (conj history board))
 
@@ -121,7 +120,7 @@
         (do
           (swap! state process-move action)
           (when (:won @state)
-            (js/alert (str "You win, in " (:num-moves @state) " moves!"))))
+            (js/alert (str "You win, in " (count (:history @state)) " moves!"))))
 
         ; FIXME: doesn't matter because JS is single-threaded, but semantically
         ; shouldn't deref/read state before modifying it - should do that
