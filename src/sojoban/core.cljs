@@ -3,7 +3,11 @@
             [sablono.core :as html :refer [html] :include-macros true]
             [goog.events :as events]
             [goog.events.EventType]
-            [sojoban.levels.yoshio :refer [yoshio-levels]]))
+            [goog.history.EventType]
+            [secretary.core :as secretary]
+            [sojoban.levels.yoshio :refer [yoshio-levels]])
+  (:import [goog History])
+  (:require-macros [secretary.macros :refer [defroute]]))
 
 (defn val-map
   "Map f over hashmap m's values. Should be in the dang core."
@@ -215,9 +219,11 @@
            [:p "Sokoban, "
             [:a {:href "http://clojure.org"} "with a J in it"] "."]
            (om/build level-info-widget data)
-           [:div#game-and-legend
-             (om/build board-widget data)
-             instructions-html]
+           (if (:board data)
+             [:div#game-and-legend
+              (om/build board-widget data)
+              instructions-html]
+             "")
            (status-message (om/value data))])))
 
 (defn preload-images []
@@ -227,6 +233,36 @@
 
 (events/listen js/document goog.events.EventType.KEYDOWN
                process-keydown)
+
+(def level-sets
+  {"yoshio" yoshio-levels})
+
+(def history (History.))
+
+(defroute "/:set-name/:idx" {:keys [set-name idx]}
+  (let [level-set (get level-sets set-name)
+        idx (js/parseInt idx)
+        level (get level-set (dec idx))]
+    (if level
+      (swap! state start-level level-set (dec idx))
+      (.replaceToken history "/"))))
+
+(defroute "/" []
+  (.replaceToken history "/yoshio/1"))
+
+(events/listen history goog.history.EventType.NAVIGATE
+               (fn [ev] (secretary/dispatch! (.-token ev))))
+
+(.setEnabled history true)
+
+(defn update-url-to-match-level [_ state old new]
+  (let [new-token (str "/" "yoshio" "/" (inc (:level-number new)))]
+    (when (and (not= [(:level-set old) (:level-number old)]
+                     [(:level-set new) (:level-number new)])
+               (not= new-token (.getToken history)))
+      (.setToken history new-token))))
+
+(add-watch state ::update-url-to-match-level update-url-to-match-level)
 
 (preload-images)
 
