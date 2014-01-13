@@ -1,4 +1,5 @@
-(ns sojoban.levels
+(ns sojoban.read
+  "Utilities for reading in levels."
   (:require [clojure.string :as string]))
 
 (defn vov-map
