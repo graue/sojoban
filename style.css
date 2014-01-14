@@ -18,7 +18,7 @@
 #game img {
   width: 35px;
   height: 35px;
-  background: url("images/space.png") no-repeat fixed center center / 100% rgb(255, 0, 0);
+  background: url("images/space.png") no-repeat fixed center center / 100% rgb(248, 248, 248);
 }
 
 #level-name, #level-author {
