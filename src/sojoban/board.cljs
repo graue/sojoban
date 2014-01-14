@@ -12,7 +12,8 @@
           (recur row-idx (inc col-idx)))
         (recur (inc row-idx) 0)))))
 
-(def ^{:doc "Row/column vector for a direction."} dir->vec
+(def dir->vec
+  "Row/column vector for a direction."
   {:up [-1 0]
    :down [1 0]
    :left [0 -1]

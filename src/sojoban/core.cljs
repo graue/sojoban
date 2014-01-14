@@ -11,7 +11,8 @@
   (:import [goog History])
   (:require-macros [secretary.macros :refer [defroute]]))
 
-(def ^{:doc "Map from cell contents to image URL"} image-url
+(def image-url
+  "Map from cell contents to image URL."
   (val-map #(str "images/" % ".png")
            {#{} "space"
             #{:player} "man"
