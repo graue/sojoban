@@ -151,6 +151,13 @@
          [:dd v]])
       (apply concat)))])
 
+(def preloaded-images
+  "Some divs to make sure all the images stay loaded, so you don't see lag
+  when you walk onto a goal, for instance."
+  (for [url (vals image-url)]
+    [:div {:style
+           {:background (str "url(" url ") no-repeat -9999px -9999px")}}]))
+
 (defn app-widget [data owner]
   (om/component
     (html [:div#app
@@ -163,12 +170,8 @@
               (om/build board-widget data)
               instructions-html]
              "")
-           (status-message (om/value data))])))
-
-(defn preload-images []
-  (doseq [url (vals image-url)]
-    (let [img (js/Image.)]
-      (set! (.-src img) url))))
+           (status-message (om/value data))
+           preloaded-images])))
 
 (events/listen js/document goog.events.EventType.KEYDOWN
                process-keydown)
@@ -202,7 +205,5 @@
       (.setToken history new-token))))
 
 (add-watch state ::update-url-to-match-level update-url-to-match-level)
-
-(preload-images)
 
 (om/root state app-widget js/document.body)
