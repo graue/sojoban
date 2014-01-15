@@ -10,6 +10,8 @@
   (:import [goog History])
   (:require-macros [secretary.macros :refer [defroute]]))
 
+;;;; Top-Level State/Logic
+
 (defn process-move [{:keys [board won history]
                      :or {won false}
                      :as state}
@@ -23,18 +25,6 @@
 
       ; Move failed; return unchanged state.
       state)))
-
-(def keycode->action
-  {38 :up
-   40 :down
-   37 :left
-   39 :right
-   82 :restart  ; XXX: not sure why (int \R) doesn't work?
-   85 :undo
-   78 :next-level
-   80 :prev-level})
-
-(def dirs #{:up :down :left :right})
 
 (defn start-level [state-value level-set level-number]
   (assoc state-value
@@ -62,6 +52,8 @@
 
 (def state (atom init-state))
 
+(def dirs #{:up :down :left :right})
+
 (defn process-action [action]
   (cond
     (and (dirs action)
@@ -81,12 +73,25 @@
     (= action :next-level)
     (swap! state try-seek-level 1)))
 
+
+;;;; Key Input
+
 (defn no-key-modifiers? [ev]
   (and
     (not (.-shiftKey ev))
     (not (.-ctrlKey ev))
     (not (.-altKey ev))
     (not (.-metaKey ev))))
+
+(def keycode->action
+  {38 :up
+   40 :down
+   37 :left
+   39 :right
+   82 :restart  ; XXX: not sure why (int \R) doesn't work?
+   85 :undo
+   78 :next-level
+   80 :prev-level})
 
 (defn process-keydown [ev]
   (when-let [action (keycode->action (.-keyCode ev))]
@@ -96,6 +101,9 @@
 
 (events/listen js/document goog.events.EventType.KEYDOWN
                process-keydown)
+
+
+;;;; Level Sets and Routing
 
 (def level-sets
   {"yoshio" yoshio-levels})
@@ -126,5 +134,8 @@
       (.setToken history new-token))))
 
 (add-watch state ::update-url-to-match-level update-url-to-match-level)
+
+
+;;;; Rendering
 
 (root state views/app js/document.body)
