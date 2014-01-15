@@ -20,7 +20,7 @@
            (for [row (:board data)]
              [:div {:className "row"}
               (for [cell row]
-                [:td [:img {:src (image-url cell)}]])])])))
+                [:span [:img {:src (image-url cell)}]])])])))
 
 (defn level-info-widget [data owner]
   (om/component
