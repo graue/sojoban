@@ -6,8 +6,11 @@ It's Sokoban. It's written in ClojureScript. So it has a J in it.
 ## Credits
 
 Includes [Yoshio Murase's automatically generated
-levels](http://www.ne.jp/asahi/ai/yoshio/sokoban/auto52/index.html),
-© 1996-2000 Yoshio Murase.
+levels](http://www.ne.jp/asahi/ai/yoshio/sokoban/auto52/index.html), ©
+1996-2000 Yoshio Murase. Also includes Microban by [David
+Skinner](https://web.archive.org/web/20130606220354/http://users.bentonrea.com/~sasquatch/sokoban),
+who writes that his sets "may be freely distributed provided they remain
+properly credited."
 
 The player avatar is by [Guyome41 on
 OpenGameArt.org](http://opengameart.org/content/2d-rpg-character), licensed
