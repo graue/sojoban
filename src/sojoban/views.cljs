@@ -26,11 +26,11 @@
   (om/component
     (html [:p#level-info
            [:span#level-name
-            (str (-> data :level-set om/value meta :title)
+            (str (-> data :level-set :title)
                  " " (-> data :level-number inc))]
            " by "
            [:span#level-author
-            (-> data :level-set om/value meta :author)]])))
+            (-> data :level-set :author)]])))
 
 (defn status-message [{:keys [history won]}]
   (let [num-moves (count history)]

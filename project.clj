@@ -6,7 +6,8 @@
                  [org.clojure/clojurescript "0.0-2138"]
                  [om "0.1.5"]
                  [sablono "0.1.7"]
-                 [secretary "0.4.0"]]
+                 [secretary "0.4.0"]
+                 [cljs-ajax "0.2.3"]]
 
   :plugins [[lein-cljsbuild "1.0.1"]]
 

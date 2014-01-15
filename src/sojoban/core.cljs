@@ -4,8 +4,9 @@
             [goog.events.EventType]
             [goog.history.EventType]
             [secretary.core :as secretary]
-            [sojoban.levels.yoshio :refer [yoshio-levels]]
+            [ajax.core :refer [ajax-request json-format]]
             [sojoban.board :as board]
+            [sojoban.read :refer [ascii-level-to-board]]
             [sojoban.views :as views])
   (:import [goog History])
   (:require-macros [secretary.macros :refer [defroute]]))
@@ -30,7 +31,9 @@
   (assoc state-value
          :level-set level-set
          :level-number level-number
-         :board (level-set level-number)
+         :board (-> level-set
+                    (get-in [:levels level-number])
+                    ascii-level-to-board)
          :history []
          :won false))
 
@@ -43,12 +46,17 @@
 
 (defn try-seek-level [state-value diff]
   (let [new-level-num (+ diff (:level-number state-value))]
-    (if (<= 0 new-level-num (dec (count (:level-set state-value))))
+    (if (<= 0 new-level-num
+            (-> state-value
+                (get-in [:level-set :levels])
+                count
+                dec)
+            (dec (count (get-in state-value [:level-set :levels]))))
       (start-level state-value (:level-set state-value) new-level-num)
       state-value)))
 
 (def init-state
-  (start-level {} yoshio-levels 0))
+  {})
 
 (def state (atom init-state))
 
@@ -106,20 +114,65 @@
 ;;;; Level Sets and Routing
 
 (def level-sets
-  {"yoshio" yoshio-levels})
+  "Initially these all point to nil meaning the level set is not yet loaded.
+  While loading, we replace the nil with :loading. Once fully loaded, we
+  replace that with the actual object."
+  {"yoshio-murase-auto-generated" (atom nil)
+   "david-skinner-microban" (atom nil)})
 
 (def history (History.))
 
-(defroute "/:set-name/:idx" {:keys [set-name idx]}
-  (let [level-set (get level-sets set-name)
-        idx (js/parseInt idx)
-        level (get level-set (dec idx))]
+(defn complete-level-load [level-set idx]
+  (let [level (get-in level-set [:levels (dec idx)])]
     (if level
       (swap! state start-level level-set (dec idx))
       (.replaceToken history "/"))))
 
+;;; Async loading makes this a little harder.
+;;; FIXME: This is long, and should be simplified.
+(defroute "/:set-name/:idx" {:keys [set-name idx]}
+  (let [idx (js/parseInt idx)
+        level-set-atom (get level-sets set-name)
+        level-set (and level-set-atom @level-set-atom)]
+    (cond
+      (nil? level-set)
+      ;; Not loaded and not in the process of loading. Start load.
+      (do
+        (reset! level-set-atom :loading)
+        (ajax-request
+          (str "/levels/" set-name ".json")
+          :get
+          {:format (json-format {:keywords? true})
+           :handler
+           (fn [[ok result]]
+             (if-not ok
+               ;; FIXME: Better error handling please. All users with crappy
+               ;; connections (i.e. me) will see this regularly.
+               (js/alert (str "Oh no! We couldn't load the level set "
+                              set-name))
+
+               (let [level-set (assoc result :short-name set-name)]
+                 (reset! level-set-atom level-set)
+                 (let [level-set-in-route (get (re-find #"^/([a-z0-9-]+)/"
+                                                        (.getToken history))
+                                               1)]
+                   ;; If the level set we just loaded is *still* the one
+                   ;; in the URL token, re-dispatch now that we can actually
+                   ;; load it. Note that this will work correctly even if the
+                   ;; token has changed from /this-level-set/1 to
+                   ;; /this-level-set/2, for instance.
+                   (when (= level-set-in-route set-name)
+                     (secretary/dispatch! (.getToken history)))))))}))
+
+      (= level-set :loading)
+      ; Already loading that set, so don't do anything.
+      nil
+
+      :else (complete-level-load level-set idx))))
+
+;;; When there's no more specific route, load a default level.
 (defroute "/" []
-  (.replaceToken history "/yoshio/1"))
+  (.replaceToken history "/yoshio-murase-auto-generated/1"))
 
 (events/listen history goog.history.EventType.NAVIGATE
                (fn [ev] (secretary/dispatch! (.-token ev))))
@@ -127,8 +180,10 @@
 (.setEnabled history true)
 
 (defn update-url-to-match-level [_ state old new]
-  (let [new-token (str "/" "yoshio" "/" (inc (:level-number new)))]
-    (when (and (not= [(:level-set old) (:level-number old)]
+  (let [set-name (get-in new [:level-set :short-name])
+        new-token (str "/" set-name "/" (inc (:level-number new)))]
+    (when (and set-name  ; If no set loaded yet, don't mess with token.
+               (not= [(:level-set old) (:level-number old)]
                      [(:level-set new) (:level-number new)])
                (not= new-token (.getToken history)))
       (.setToken history new-token))))
