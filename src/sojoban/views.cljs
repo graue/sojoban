@@ -25,9 +25,7 @@
 (defn level-info-widget [data owner]
   (om/component
     (html [:p#level-info
-           [:span#level-name
-            (str (-> data :level-set :title)
-                 " " (-> data :level-number inc))]
+           [:span#level-name (:level-title data)]
            " by "
            [:span#level-author
             (-> data :level-set :author)]])))

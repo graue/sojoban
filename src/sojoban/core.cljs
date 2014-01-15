@@ -28,14 +28,20 @@
       state)))
 
 (defn start-level [state-value level-set level-number]
-  (assoc state-value
-         :level-set level-set
-         :level-number level-number
-         :board (-> level-set
-                    (get-in [:levels level-number])
-                    ascii-level-to-board)
-         :history []
-         :won false))
+  (let [level-raw (get-in level-set [:levels level-number])
+        ;; A board can be either a string, or a map with
+        ;; :contents and :title keys.
+        [level-ascii title]
+        (if (string? level-raw)
+          [level-raw (str (:title level-set) " " (inc level-number))]
+          ((juxt :contents :title) level-raw))]
+    (assoc state-value
+           :level-set level-set
+           :level-number level-number
+           :level-title title
+           :board (ascii-level-to-board level-ascii)
+           :history []
+           :won false)))
 
 (defn undo [state-value]
   (if (> (count (:history state-value)) 0)
