@@ -5,6 +5,7 @@
 #game {
   float: left;
   margin-right: 20px;
+  min-height: 280px; /* 35x8 = 8 rows */
 }
 
 #game-and-legend:after {
