@@ -141,6 +141,10 @@
         level-set-atom (get level-sets set-name)
         level-set (and level-set-atom @level-set-atom)]
     (cond
+      (nil? level-set-atom)
+      ; We don't know about this level set, so redirect to the default level.
+      (.replaceToken history "/")
+
       (nil? level-set)
       ;; Not loaded and not in the process of loading. Start load.
       (do
