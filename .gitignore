@@ -5,3 +5,4 @@
 *.swp
 *~
 /react-*.js
+/.lein-repl-history
