@@ -72,11 +72,13 @@
            [:h1 "Sojoban"]
            [:p "Sokoban, "
             [:a {:href "http://clojure.org"} "with a J in it"] "."]
-           (om/build level-info-widget data)
+           (if (:level-set data)
+             (om/build level-info-widget data)
+             "")
            (if (:board data)
              [:div#game-and-legend
               (om/build board-widget data)
               instructions-html]
-             "")
+             [:p#loading-msg "Loading, please wait."])
            (status-message (om/value data))
            preloaded-images])))
