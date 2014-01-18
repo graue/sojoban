@@ -150,7 +150,7 @@
       (do
         (reset! level-set-atom :loading)
         (ajax-request
-          (str "/levels/" set-name ".json")
+          (str "levels/" set-name ".json")
           :get
           {:format (json-format {:keywords? true})
            :handler
