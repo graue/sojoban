@@ -1,6 +1,6 @@
 (defproject sojoban "0.1.0-SNAPSHOT"
   :description "Sokoban with a J in it"
-  :url "http://example.com/FIXME"
+  :url "http://toxicsli.me/sojoban/"
 
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-2138"]
