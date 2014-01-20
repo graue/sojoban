@@ -61,10 +61,7 @@
       (start-level state-value (:level-set state-value) new-level-num)
       state-value)))
 
-(def init-state
-  {})
-
-(def state (atom init-state))
+(def state (atom {}))
 
 (def dirs #{:up :down :left :right})
 
