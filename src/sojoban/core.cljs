@@ -200,4 +200,4 @@
 
 ;;;; Rendering
 
-(root state views/app js/document.body)
+(root views/app state {:target js/document.body})

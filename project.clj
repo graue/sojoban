@@ -2,18 +2,18 @@
   :description "Sokoban with a J in it"
   :url "http://toxicsli.me/sojoban/"
 
-  :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-2138"]
-                 [om "0.1.5"]
-                 [sablono "0.1.7"]
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [org.clojure/clojurescript "0.0-2173"]
+                 [om "0.5.3"]
+                 [sablono "0.2.14"]
                  [secretary "0.4.0"]
                  [cljs-ajax "0.2.3"]]
 
-  :plugins [[lein-cljsbuild "1.0.1"]]
+  :plugins [[lein-cljsbuild "1.0.2"]]
 
   :source-paths ["src"]
 
-  :cljsbuild { 
+  :cljsbuild {
     :builds [{:id "sojoban"
               :source-paths ["src"]
               :compiler {

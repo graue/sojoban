@@ -1,6 +1,6 @@
 (ns sojoban.views
   (:require [om.core :as om :include-macros true]
-            [sablono.core :as html :refer [html] :include-macros true]
+            [sablono.core :as html :refer-macros [html]]
             [sojoban.utils :refer [val-map]]))
 
 (def image-url
